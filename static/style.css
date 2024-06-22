@@ -4,7 +4,7 @@ body {
     padding: 0;
     display: flex;
     height: 100vh;
-    background-color: #f4f4f9;
+    background-color: #fff;
 }
 
 .container {
@@ -14,7 +14,7 @@ body {
 
 .sidebar {
     width: 20%;
-    background-color: #282828;
+    background-color: #001E1E;
     color: white;
     padding: 20px;
     display: flex;
@@ -47,31 +47,57 @@ body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
-    color: #e8e8e8;
-    background-color: #383838;
+    background-color: #00312F;
+}
+
+.message {
+    max-width: 70%;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    line-height: 1.4;
+    position: relative;
+    color: #fff;
+}
+
+.user-message {
+    background-color: #008b86;
+    align-self: flex-end;
+    margin-left: auto;
+    border-bottom-right-radius: 0;
+}
+
+.ai-message {
+    background-color: #e5e5ea;
+    color: #000;
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
 }
 
 .input-bar {
     display: flex;
     padding: 20px;
-    background-color: #383838;
+    background-color: #00312F;
 }
 
 .input-bar input {
     flex: 1;
     padding: 10px;
-    border: none;
-    border-radius: 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
     margin-right: 10px;
+    font-size: 16px;
 }
 
 .input-bar button {
     padding: 10px 20px;
     border: none;
-    border-radius: 90px;
-    background-color: #572efa;
-    color: rgb(255, 255, 255);
+    border-radius: 20px;
+    background-color: #001E1E;
+    color: white;
     cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
 }
 
 .input-bar button:hover {
