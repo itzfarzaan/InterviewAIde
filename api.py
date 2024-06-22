@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from groq import Groq
 import os
 
@@ -33,10 +33,13 @@ def generate_interview_questions(domain):
     generated_content = response.choices[0].message.content
     
     # Split the content into individual questions and ensure we have exactly 5
-    # questions = [q.strip() for q in generated_content.split('\n') if q.strip() and not q.startswith('Here are')][:5]
     questions = [q.strip() for q in generated_content.split('\n') if q.strip()][:5]
 
     return questions
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/questions', methods=['GET'])
 def questions():
