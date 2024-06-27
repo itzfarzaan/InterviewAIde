@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Homepage</title>
+    <title>ChatterCareer - Interview Assistant</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -10,17 +10,25 @@
         <div class="sidebar">
             <h2>ChatterCareer</h2>
             <ul>
-                <li>Home</li>
-                <li>Instructions</li>
-                <li>About</li>
-                <li>Contact</li>
+                <li class="active" data-mode="chat">Chat Interview</li>
+                <li data-mode="cv">CV-based Interview</li>
+                <li data-mode="practice">Practice Mode</li>
+                <li data-mode="about">About</li>
+                <li data-mode="contact">Contact</li>
             </ul>
         </div>
         <div class="main">
             <div class="chat-window" id="chat-window"></div>
             <div class="input-bar">
-                <input type="text" id="user-input" placeholder="Type your answer or domain...">
-                <button onclick="handleUserInput()">Send</button>
+                <input type="text" id="user-input" placeholder="Type your message here...">
+                <button id="send-button">Send</button>
+                <button id="start-speaking" style="display: none;">Start Speaking</button>
+                <button id="stop-speaking" style="display: none;">Stop Speaking</button>
+                <div id="listening-animation" style="display: none;">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
             </div>
         </div>
     </div>

@@ -32,8 +32,20 @@ body {
 }
 
 .sidebar ul li {
-    padding: 10px 0;
+    padding: 10px 15px;
     cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.sidebar ul li:hover {
+    background-color: #00312F;
+}
+
+.sidebar ul li.active {
+    background-color: #008b86;
+    color: white;
 }
 
 .main {
@@ -102,4 +114,50 @@ body {
 
 .input-bar button:hover {
     background-color: #0056b3;
+}
+
+#start-speaking, #stop-speaking {
+    background-color: #008b86;
+}
+
+#start-speaking:hover, #stop-speaking:hover {
+    background-color: #00635e;
+}
+
+#listening-animation {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #008b86;
+    margin: 0 3px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
 }

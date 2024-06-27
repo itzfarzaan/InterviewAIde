@@ -92,24 +92,24 @@ def generate_final_feedback(questions, answers):
 def index():
     return render_template('index.html')
 
-@app.route('/start_interview', methods=['POST'])
-def start_interview():
-    user_input = request.json.get('domain')
-    if not user_input:
-        return jsonify({'error': 'Missing input'}), 400
+# @app.route('/start_interview', methods=['POST'])
+# def start_interview():
+#     user_input = request.json.get('domain')
+#     if not user_input:
+#         return jsonify({'error': 'Missing input'}), 400
     
-    is_valid, validation_message = validate_and_extract_domains(user_input)
-    if not is_valid:
-        return jsonify({'error': validation_message}), 400
+#     is_valid, validation_message = validate_and_extract_domains(user_input)
+#     if not is_valid:
+#         return jsonify({'error': validation_message}), 400
     
-    # Extract domains from the validation message
-    domains = validation_message.split(':', 1)[1].strip()
+#     # Extract domains from the validation message
+#     domains = validation_message.split(':', 1)[1].strip()
     
-    questions = generate_interview_questions(domains)
-    session['questions'] = questions
-    session['current_question'] = 0
-    session['answers'] = []
-    return jsonify({"question": questions[0]})
+#     questions = generate_interview_questions(domains)
+#     session['questions'] = questions
+#     session['current_question'] = 0
+#     session['answers'] = []
+#     return jsonify({"question": questions[0]})
 
 @app.route('/answer_question', methods=['POST'])
 def answer_question():
@@ -130,6 +130,133 @@ def answer_question():
         final_feedback = generate_final_feedback(questions, session['answers'])
         session.clear()
         return jsonify({"final_feedback": final_feedback})
+
+
+# @app.route('/get_practice_question', methods=['GET'])
+# def get_practice_question():
+#     # This should return the next question in the practice interview
+#     # You might want to keep track of the current question index in the session
+#     if 'practice_questions' not in session:
+#         session['practice_questions'] = generate_interview_questions("general")  # Or use a specific domain
+#         session['current_question'] = 0
+    
+#     if session['current_question'] < len(session['practice_questions']):
+#         question = session['practice_questions'][session['current_question']]
+#         session['current_question'] += 1
+#         return jsonify({"question": question})
+#     else:
+#         return jsonify({"question": None})  # No more questions
+
+@app.route('/start_interview', methods=['POST'])
+def start_interview():
+    user_input = request.json.get('domain')
+    if not user_input:
+        return jsonify({'error': 'Missing input'}), 400
+    
+    is_valid, validation_message = validate_and_extract_domains(user_input)
+    if not is_valid:
+        return jsonify({'error': validation_message}), 400
+    
+    # Extract domains from the validation message
+    domains = validation_message.split(':', 1)[1].strip()
+    
+    questions = generate_interview_questions(domains)
+    return jsonify({"questions": questions})
+
+# Remove or comment out the /get_practice_question route as it's no longer needed
+
+
+# @app.route('/generate_feedback', methods=['POST'])
+# def generate_feedback():
+#     data = request.json
+#     questions = data.get('questions', [])
+#     answers = data.get('answers', [])
+    
+#     if len(questions) != len(answers):
+#         return jsonify({'error': 'Mismatch in number of questions and answers'}), 400
+    
+#     # Prepare the input for the AI model
+#     interview_summary = "Interview Summary:\n"
+#     for q, a in zip(questions, answers):
+#         interview_summary += f"Q: {q}\nA: {a}\n\n"
+    
+#     prompt = f"""As an AI interview assistant, analyze the following interview and provide constructive feedback:
+
+# {interview_summary}
+
+# Please provide feedback on:
+# 1. Overall performance
+# 2. Strengths demonstrated
+# 3. Areas for improvement
+# 4. Specific advice for future interviews
+
+# Feedback:"""
+
+#     response = client.chat.completions.create(
+#         model=MODEL,
+#         messages=[
+#             {"role": "system", "content": "You are an AI interview assistant providing feedback on practice interviews."},
+#             {"role": "user", "content": prompt}
+#         ],
+#         max_tokens=500,
+#         temperature=0.7
+#     )
+
+#     feedback = response.choices[0].message.content.strip()
+#     return jsonify({"feedback": feedback})
+
+
+@app.route('/generate_feedback', methods=['POST'])
+def generate_feedback():
+    try:
+        data = request.json
+        mode = data.get('mode', '')
+        questions = data.get('questions', [])
+        answers = data.get('answers', [])
+        
+        print(f"Generating feedback for {mode} mode")
+        print("Received questions:", questions)
+        print("Received answers:", answers)
+        
+        if len(questions) != len(answers):
+            print(f"Mismatch in number of questions ({len(questions)}) and answers ({len(answers)})")
+            return jsonify({'error': 'Mismatch in number of questions and answers'}), 400
+        
+        # Prepare the input for the AI model
+        interview_summary = "Interview Summary:\n"
+        for q, a in zip(questions, answers):
+            interview_summary += f"Q: {q}\nA: {a}\n\n"
+        
+        print("Interview summary:", interview_summary)
+        
+        prompt = f"""As an AI interview assistant, analyze the following {mode} interview and provide constructive feedback:
+
+{interview_summary}
+
+Please provide feedback on:
+1. Overall performance
+2. Strengths demonstrated
+3. Areas for improvement
+4. Specific advice for future interviews
+
+Feedback:"""
+
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": f"You are an AI interview assistant providing feedback on {mode} interviews."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+
+        feedback = response.choices[0].message.content.strip()
+        print("Generated feedback:", feedback)
+        return jsonify({"feedback": feedback})
+    except Exception as e:
+        print("Error in generate_feedback:", str(e))
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
