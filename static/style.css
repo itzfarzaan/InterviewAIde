@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+IT+Moderna:wght@100..400&display=swap');
+/* font-family: "Playwrite IT Moderna", cursive; */
+
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
@@ -24,6 +27,7 @@ body {
 
 .sidebar h2 {
     margin-top: 0;
+    font-family: "Playwrite IT Moderna", cursive;
 }
 
 .sidebar ul {
