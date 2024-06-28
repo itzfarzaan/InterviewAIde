@@ -65,14 +65,14 @@ function switchMode(mode) {
 
     switch(mode) {
         case 'chat':
-            displayMessage("Welcome to Chat Interview mode. Please enter your domain/profession to begin.", 'ai-message');
+            displayMessage("Let's begin your interview preparation. Please enter your target job role or industry to start.", 'ai-message');
             break;
         case 'cv':
-            displayMessage("Welcome to CV-based Interview mode. Please upload your CV/Resume to begin.", 'ai-message');
+            displayMessage("We're ready to tailor your interview experience. Please upload your Resume/CV to proceed.", 'ai-message');
             document.getElementById('cv-mode-section').style.display = 'block';
             break;
         case 'practice':
-            displayMessage("Welcome to Practice mode. Please enter your domain/profession to begin.", 'ai-message');
+            displayMessage("Lets begin your vebral interview preparation. Please enter your domain to begin.", 'ai-message');
             break;
         case 'about':
             displayMessage("ChatterCareer is an AI-powered interview assistant designed to help you prepare for job interviews.", 'ai-message');
