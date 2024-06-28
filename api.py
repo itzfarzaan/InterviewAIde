@@ -243,6 +243,8 @@ Please provide feedback on:
 3. Areas for improvement
 4. Specific advice for future interviews
 
+Address the interviewee directly using "you" and "your" instead of "the candidate" or "they". Provide encouraging and constructive feedback that feels personal and tailored to the individual.
+
 Feedback:"""
 
         response = client.chat.completions.create(
@@ -396,7 +398,10 @@ def generate_cv_feedback():
     2. Strengths demonstrated
     3. Areas for improvement
     4. Alignment of responses with CV content
-    5. Specific advice for future interviews"""
+    5. Specific advice for future interviews
+    
+    Address the interviewee directly using "you" and "your" instead of "the candidate" or "they". Provide encouraging and constructive feedback that feels personal and tailored to the individual.
+    """
 
     messages = [
         {"role": "system", "content": system_message},

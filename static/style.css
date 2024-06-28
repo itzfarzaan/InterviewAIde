@@ -190,7 +190,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1065px;
+    /* margin-left: 1065px; */
+    left: 1065px;
 }
 
 #cv-upload-button:hover {

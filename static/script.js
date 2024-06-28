@@ -72,7 +72,7 @@ function switchMode(mode) {
             document.getElementById('cv-mode-section').style.display = 'block';
             break;
         case 'practice':
-            displayMessage("Lets begin your vebral interview preparation. Please enter your domain to begin.", 'ai-message');
+            displayMessage("Lets begin your vebral interview preparation. Please enter your domain/profession to begin.", 'ai-message');
             break;
         case 'about':
             displayMessage("ChatterCareer is an AI-powered interview assistant designed to help you prepare for job interviews.", 'ai-message');
@@ -274,8 +274,8 @@ function submitCVAnswer(answer) {
 
 function endCVInterview() {
     cvInterviewState = 'completed';
-    displayMessage("Thank you for completing the CV-based interview. Here's a summary of your CV:", 'ai-message');
-    displayMessage(cvSummary, 'ai-message');
+    // displayMessage("Thank you for completing the CV-based interview. Here's a summary of your CV:", 'ai-message');
+    // displayMessage(cvSummary, 'ai-message');
     displayMessage("Generating feedback...", 'ai-message');
     generateCVFeedback();
 }
