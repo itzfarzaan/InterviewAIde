@@ -5,6 +5,11 @@ let currentMode = 'chat';
 let isInterviewStarted = false;
 let isPracticeStarted = false;
 let userPreferredQuestionCount = 0;
+let cvQuestions = [];
+let cvAnswers = [];
+let cvQuestionCount = 0;
+let cvSummary = '';
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const sidebarItems = document.querySelectorAll('.sidebar ul li');
@@ -32,6 +37,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     setupSpeechRecognition();
+    
+    // New event listeners for CV-based interview
+    const cvUploadButton = document.getElementById('upload-cv');
+    const cvFileInput = document.getElementById('cv-file');
+    cvFileInput.addEventListener('change', handleCVUpload);
+
+    cvUploadButton.addEventListener('click', function() {
+        cvFileInput.click();
+    });
+
+    cvFileInput.addEventListener('change', handleCVUpload);
 });
 
 function switchMode(mode) {
@@ -40,19 +56,27 @@ function switchMode(mode) {
     isPracticeStarted = false;
     currentQuestions = [];
     currentQuestionIndex = 0;
-    
+    cvInterviewState = 'initial';
+    cvQuestions = [];
+    cvAnswers = [];
+    cvQuestionCount = 0;
+    cvSummary = '';
+    window.waitingForCVQuestionCount = false;
+
     const chatWindow = document.getElementById('chat-window');
     chatWindow.innerHTML = '';
 
     document.getElementById('start-speaking').style.display = 'none';
     document.getElementById('stop-speaking').style.display = 'none';
+    document.getElementById('cv-upload').style.display = 'none';
 
     switch(mode) {
         case 'chat':
             displayMessage("Welcome to Chat Interview mode. Please enter your domain/profession to begin.", 'ai-message');
             break;
         case 'cv':
-            displayMessage("CV-based Interview mode selected. Please upload your CV to begin.", 'ai-message');
+            displayMessage("Welcome to CV-based Interview mode. Please upload your CV/Resume to begin.", 'ai-message');
+            document.getElementById('cv-upload').style.display = 'block';
             break;
         case 'practice':
             displayMessage("Welcome to Practice mode. Please enter your domain/profession to begin.", 'ai-message');
@@ -68,17 +92,17 @@ function switchMode(mode) {
 
 function handleUserInput() {
     const userInput = document.getElementById('user-input').value.trim();
-    console.log("User input:", userInput);
     if (userInput) {
+        // displayMessage(userInput, 'user-message');
         if (currentMode === 'practice') {
             handlePracticeMode(userInput);
         } else if (currentMode === 'chat') {
             handleChatMode(userInput);
+        } else if (currentMode === 'cv') {
+            handleCVMode(userInput);
         } else {
-            // For other modes, display the user input immediately
-            displayMessage(userInput, 'user-message');
             // Process the input and generate a response for other modes
-            // This is where you'd call your backend API for other modes
+            // You might want to add a default handling method here
         }
         document.getElementById('user-input').value = '';
     }
@@ -116,6 +140,179 @@ function handlePracticeMode(input) {
         displayMessage("Please type 'yes' when you're ready to start the verbal interview.", 'ai-message');
     }
 }
+
+// START CV
+
+let cvInterviewState = 'initial'; // Can be 'initial', 'ready', 'counting', 'interviewing', 'completed'
+
+function handleCVMode(input) {
+    displayMessage(input, 'user-message');
+    
+    switch(cvInterviewState) {
+        case 'initial':
+            if (input.toLowerCase() === 'yes') {
+                cvInterviewState = 'counting';
+                askForCVQuestionCount();
+            } else {
+                displayMessage("Okay. When you're ready to start the interview, just type 'yes'.", 'ai-message');
+            }
+            break;
+        
+        case 'counting':
+            handleCVQuestionCountInput(input);
+            break;
+        
+        case 'ready':
+            if (input.toLowerCase() === 'yes') {
+                cvInterviewState = 'interviewing';
+                generateCVQuestions();
+            } else {
+                displayMessage("Okay. When you're ready to start the interview, just type 'yes'.", 'ai-message');
+            }
+            break;
+        
+        case 'interviewing':
+            submitCVAnswer(input);
+            break;
+        
+        case 'completed':
+            displayMessage("The interview is already completed. Please choose another mode if you'd like to start a new interview.", 'ai-message');
+            break;
+    }
+}
+
+function askForCVQuestionCount() {
+    displayMessage("How many questions would you like to answer in this interview? (Enter a number between 1 and 10)", 'ai-message');
+    window.waitingForCVQuestionCount = true;
+}
+
+function handleCVQuestionCountInput(input) {
+    const count = parseInt(input);
+    if (isNaN(count) || count < 1 || count > 10) {
+        displayMessage("Please enter a valid number between 1 and 10.", 'ai-message');
+    } else {
+        cvQuestionCount = count;
+        cvInterviewState = 'ready';
+        displayMessage(`Great! You've chosen to answer ${count} questions. Type 'yes' when you're ready to begin the interview.`, 'ai-message');
+    }
+}
+
+function startCVInterview() {
+    if (cvQuestions.length === 0) {
+        generateCVQuestions();
+    } else {
+        askNextCVQuestion();
+    }
+}
+
+function handleCVUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/upload_cv', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                displayMessage(data.error, 'ai-message');
+            } else {
+                displayMessage(data.message, 'ai-message');
+                cvSummary = data.analysis.summary;
+                cvInterviewState = 'initial';
+                displayMessage("Would you like to start the interview? (Yes/No)", 'ai-message');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            displayMessage("An error occurred while uploading the CV. Please try again.", 'ai-message');
+        });
+    }
+}
+
+function generateCVQuestions() {
+    fetch('/generate_cv_questions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ num_questions: cvQuestionCount }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            displayMessage(data.error, 'ai-message');
+            cvInterviewState = 'initial';
+        } else {
+            cvQuestions = data.questions;
+            displayMessage("Great! Let's begin the interview.", 'ai-message');
+            currentQuestionIndex = 0;
+            askNextCVQuestion();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayMessage("An error occurred while generating questions. Please try again.", 'ai-message');
+        cvInterviewState = 'initial';
+    });
+}
+
+function askNextCVQuestion() {
+    if (currentQuestionIndex < cvQuestionCount && currentQuestionIndex < cvQuestions.length) {
+        const question = cvQuestions[currentQuestionIndex];
+        displayMessage(question, 'ai-message');
+    } else {
+        endCVInterview();
+    }
+}
+
+function submitCVAnswer(answer) {
+    cvAnswers.push(answer);
+    currentQuestionIndex++;
+    if (currentQuestionIndex < cvQuestionCount && currentQuestionIndex < cvQuestions.length) {
+        askNextCVQuestion();
+    } else {
+        endCVInterview();
+    }
+}
+
+function endCVInterview() {
+    cvInterviewState = 'completed';
+    displayMessage("Thank you for completing the CV-based interview. Here's a summary of your CV:", 'ai-message');
+    displayMessage(cvSummary, 'ai-message');
+    displayMessage("Generating feedback...", 'ai-message');
+    generateCVFeedback();
+}
+
+function generateCVFeedback() {
+    fetch('/generate_cv_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            questions: cvQuestions,
+            answers: cvAnswers
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            displayMessage(data.error, 'ai-message');
+        } else {
+            displayMessage(data.feedback, 'ai-message');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        displayMessage("An error occurred while generating feedback. Please try again.", 'ai-message');
+    });
+}
+
+// END OF CV
 
 function startInterview(domain) {
     userAnswers = []; // Reset answers at the start of a new interview

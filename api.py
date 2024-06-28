@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify, render_template, session
 from groq import Groq
 import os
+import re
+import PyPDF2
+from docx import Document
+import io
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  
@@ -257,6 +261,159 @@ Feedback:"""
     except Exception as e:
         print("Error in generate_feedback:", str(e))
         return jsonify({'error': str(e)}), 500
+
+# --------    CV START -----------------
+
+@app.route('/upload_cv', methods=['POST'])
+def upload_cv():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file:
+        try:
+            content = extract_text_from_file(file)
+            session['cv_content'] = content
+            analysis = analyze_cv(content)
+            return jsonify({'message': 'CV uploaded and analyzed successfully', 'analysis': analysis})
+        except Exception as e:
+            return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+
+def extract_text_from_file(file):
+    filename = file.filename.lower()
+    if filename.endswith('.pdf'):
+        return extract_text_from_pdf(file)
+    elif filename.endswith('.docx'):
+        return extract_text_from_docx(file)
+    elif filename.endswith('.txt'):
+        return file.read().decode('utf-8', errors='ignore')
+    else:
+        raise ValueError("Unsupported file type")
+
+def extract_text_from_pdf(file):
+    pdf_reader = PyPDF2.PdfReader(io.BytesIO(file.read()))
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text() + "\n"
+    return text
+
+def extract_text_from_docx(file):
+    doc = Document(io.BytesIO(file.read()))
+    text = ""
+    for para in doc.paragraphs:
+        text += para.text + "\n"
+    return text
+
+def analyze_cv(content):
+    system_message = """You are an AI assistant tasked with analyzing a CV/resume. 
+    Extract key information such as work experience, skills, education, and notable projects.
+    Also, provide a brief summary of the CV."""
+    
+    user_message = f"Analyze this CV and extract key information:\n\n{content}"
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": user_message}
+    ]
+
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        max_tokens=500,
+        temperature=0.3
+    )
+
+    analysis = response.choices[0].message.content
+    
+    # Extract summary from the analysis
+    summary_start = analysis.find("Summary:")
+    summary = analysis[summary_start:] if summary_start != -1 else "Summary not available."
+
+    return {"full_analysis": analysis, "summary": summary}
+
+@app.route('/generate_cv_questions', methods=['POST'])
+def generate_cv_questions():
+    cv_content = session.get('cv_content')
+    if not cv_content:
+        return jsonify({'error': 'No CV found in session'}), 400
+    
+    num_questions = request.json.get('num_questions', 5)
+    
+    system_message = """You are an AI assistant tasked with generating interview questions based on a CV/resume. 
+    Generate relevant and insightful questions that will help assess the candidate's experience and skills."""
+    
+    user_message = f"""Generate {num_questions} interview questions based on this CV:
+
+    {cv_content}
+
+    Each question should be directly related to the information in the CV and help assess the candidate's suitability for roles matching their experience.
+    Provide only the questions, one per line, without any additional text, numbering, or formatting."""
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": user_message}
+    ]
+
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        max_tokens=1000,
+        temperature=0.7
+    )
+
+    questions = response.choices[0].message.content.strip().split('\n')
+    questions = [q.strip() for q in questions if q.strip()]
+    return jsonify({'questions': questions[:num_questions]})
+
+@app.route('/generate_cv_feedback', methods=['POST'])
+def generate_cv_feedback():
+    cv_content = session.get('cv_content')
+    if not cv_content:
+        return jsonify({'error': 'No CV found in session'}), 400
+    
+    questions = request.json.get('questions', [])
+    answers = request.json.get('answers', [])
+    
+    if len(questions) != len(answers):
+        return jsonify({'error': 'Mismatch in number of questions and answers'}), 400
+    
+    system_message = """You are an AI assistant providing feedback on a CV-based interview. 
+    Analyze the CV content, interview questions, and candidate's answers to provide constructive feedback."""
+    
+    user_message = f"""Analyze this CV-based interview and provide feedback:
+
+    CV Content:
+    {cv_content}
+
+    Interview:
+    """
+    for q, a in zip(questions, answers):
+        user_message += f"Q: {q}\nA: {a}\n\n"
+    
+    user_message += """Provide feedback on:
+    1. Overall performance
+    2. Strengths demonstrated
+    3. Areas for improvement
+    4. Alignment of responses with CV content
+    5. Specific advice for future interviews"""
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": user_message}
+    ]
+
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        max_tokens=1000,
+        temperature=0.7
+    )
+
+    feedback = response.choices[0].message.content
+    return jsonify({'feedback': feedback})
+
+# --------    CV END -----------------
 
 if __name__ == '__main__':
     app.run(debug=True)
