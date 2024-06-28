@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>ChatterCareer - Interview Assistant</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -30,10 +31,13 @@
                     <span class="dot"></span>
                 </div>
             </div>
-            <!-- New CV upload section -->
-            <div id="cv-upload" style="display: none;">
-                <input type="file" id="cv-file" accept=".pdf,.doc,.docx,.txt">
-                <button id="upload-cv">Upload CV</button>
+            <!-- CV-mode specific section -->
+            <div id="cv-mode-section" style="display: none;">
+                <button id="cv-upload-button" class="tooltip">
+                    <i class="fas fa-paperclip"></i>
+                    <span class="tooltiptext">Upload CV</span>
+                </button>
+                <input type="file" id="cv-file" accept=".pdf,.doc,.docx,.txt" style="display: none;">
             </div>
         </div>
     </div>

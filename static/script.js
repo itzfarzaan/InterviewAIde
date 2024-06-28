@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const startSpeakingButton = document.getElementById('start-speaking');
     const stopSpeakingButton = document.getElementById('stop-speaking');
     const userInput = document.getElementById('user-input');
+    const cvUploadButton = document.getElementById('cv-upload-button');
+    const cvFileInput = document.getElementById('cv-file');
 
     sidebarItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -24,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             switchMode(this.dataset.mode);
         });
-
     });
 
     sendButton.addEventListener('click', handleUserInput);
@@ -36,18 +37,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    setupSpeechRecognition();
-    
-    // New event listeners for CV-based interview
-    const cvUploadButton = document.getElementById('upload-cv');
-    const cvFileInput = document.getElementById('cv-file');
-    cvFileInput.addEventListener('change', handleCVUpload);
-
     cvUploadButton.addEventListener('click', function() {
         cvFileInput.click();
     });
 
     cvFileInput.addEventListener('change', handleCVUpload);
+
+    setupSpeechRecognition();
+
+    // Initialize with chat mode
+    switchMode('chat');
 });
 
 function switchMode(mode) {
@@ -56,19 +55,13 @@ function switchMode(mode) {
     isPracticeStarted = false;
     currentQuestions = [];
     currentQuestionIndex = 0;
-    cvInterviewState = 'initial';
-    cvQuestions = [];
-    cvAnswers = [];
-    cvQuestionCount = 0;
-    cvSummary = '';
-    window.waitingForCVQuestionCount = false;
-
+    
     const chatWindow = document.getElementById('chat-window');
     chatWindow.innerHTML = '';
 
     document.getElementById('start-speaking').style.display = 'none';
     document.getElementById('stop-speaking').style.display = 'none';
-    document.getElementById('cv-upload').style.display = 'none';
+    document.getElementById('cv-mode-section').style.display = 'none';
 
     switch(mode) {
         case 'chat':
@@ -76,7 +69,7 @@ function switchMode(mode) {
             break;
         case 'cv':
             displayMessage("Welcome to CV-based Interview mode. Please upload your CV/Resume to begin.", 'ai-message');
-            document.getElementById('cv-upload').style.display = 'block';
+            document.getElementById('cv-mode-section').style.display = 'block';
             break;
         case 'practice':
             displayMessage("Welcome to Practice mode. Please enter your domain/profession to begin.", 'ai-message');

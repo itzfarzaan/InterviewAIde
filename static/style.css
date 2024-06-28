@@ -113,7 +113,7 @@ body {
 }
 
 .input-bar button:hover {
-    background-color: #0056b3;
+    background-color: #008b86;
 }
 
 #start-speaking, #stop-speaking {
@@ -160,4 +160,63 @@ body {
         transform: scale(0.8);
         opacity: 0.5;
     }
+}
+
+/* NEW CHANGES */
+
+#cv-mode-section {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+#cv-upload-button {
+    padding: 10px;
+    font-size: 20px;
+    background-color: #001E1E;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    margin-bottom: 2.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1065px;
+}
+
+#cv-upload-button:hover {
+    background-color: #008b86;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 80px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -40px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
 }
