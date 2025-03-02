@@ -12,7 +12,7 @@ Key features include:
 This application integrates with **Groq API** for AI-driven analysis.
 
 <p align="center">
-<img src="screenshots/app.png" width="800">
+<img src="screenshots/app.png" width="900">
 </p>
 
 ## Features
@@ -43,28 +43,28 @@ This application integrates with **Groq API** for AI-driven analysis.
 ### 1. Chat-Based Interview
 
 #### Description:
--A text-based interview simulation where candidates receive and respond to domain-specific questions, providing detailed written answers for analysis and feedback.
+A text-based interview simulation where candidates receive and respond to domain-specific questions, providing detailed written answers for analysis and feedback.
 <p align="center">
-<img src="screenshots/chatmode.png" width="800">
+<img src="screenshots/chatmode.png" width="900">
 </p>
 
 ### 2. CV-Based Mode
 
 #### Description:
---An interview mode where questions are generated based on the candidate's uploaded CV, with a focus on their experience, skills, and education. Feedback is tailored to their CV content.
+An interview mode where questions are generated based on the candidate's uploaded CV, with a focus on their experience, skills, and education. Feedback is tailored to their CV content.
 <p align="center">
-<img src="screenshots/cvmode.png" width="800">
+<img src="screenshots/cvmode.png" width="900">
 </p>
 
 ### 3. Verbal/Voice Mode
 
 #### Description:
--A voice-enabled interview mode where candidates answer questions verbally. The system evaluates responses in real-time, offering feedback on spoken answers and assessing communication skills.
+A voice-enabled interview mode where candidates answer questions verbally. The system evaluates responses in real-time, offering feedback on spoken answers and assessing communication skills.
 
 ### 4. Feedback
--The system provides personalized feedback by assessing strengths, pinpointing weaknesses, and offering actionable suggestions for improvement based on the candidate's responses, helping them grow and refine their skills.
+The system provides personalized feedback by assessing strengths, pinpointing weaknesses, and offering actionable suggestions for improvement based on the candidate's responses, helping them grow and refine their skills.
 <p align="center">
-<img src="screenshots/feedback.png" width="500">
+<img src="screenshots/feedback.png">
 </p>
 
 
