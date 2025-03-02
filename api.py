@@ -3,12 +3,12 @@ from groq import Groq
 import os
 import re
 import PyPDF2
-from docx import Document
+# from docx import Document
 import io
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+client = Groq(api_key="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")
 MODEL = 'llama3-70b-8192'
 
 def validate_and_extract_domains(input_text):

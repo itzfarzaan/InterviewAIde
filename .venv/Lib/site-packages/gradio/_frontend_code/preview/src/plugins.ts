@@ -44,11 +44,19 @@ export function plugins(config: ComponentConfig): PluginOption[] {
 			prebundleSvelteLibraries: false,
 			hot: true,
 			compilerOptions: {
-				discloseVersion: false
+				discloseVersion: false,
+				hydratable: true
 			},
 			extensions: _svelte_extensions,
 			preprocess: [
-				preprocess(),
+				preprocess({
+					typescript: {
+						compilerOptions: {
+							declaration: false,
+							declarationMap: false
+						}
+					}
+				}),
 				...(_additional_svelte_preprocess as PreprocessorGroup[])
 			]
 		}),
@@ -69,12 +77,15 @@ export function make_gradio_plugin({
 	backend_port,
 	imports
 }: GradioPluginOptions): Plugin {
+	const v_id = "virtual:component-loader";
+	const resolved_v_id = "\0" + v_id;
 	return {
 		name: "gradio",
 		enforce: "pre",
 		transform(code) {
 			const new_code = code
 				.replace(RE_SVELTE_IMPORT, (str, $1, $2) => {
+					if ($1.trim().startsWith("type")) return str;
 					const identifier = $1.trim().startsWith("* as")
 						? $1.replace("* as", "").trim()
 						: $1.trim();
@@ -90,12 +101,20 @@ export function make_gradio_plugin({
 			};
 		},
 		resolveId(id) {
+			if (id === v_id) {
+				return resolved_v_id;
+			}
 			if (
 				id !== "svelte" &&
 				id !== "svelte/internal" &&
 				id.startsWith("svelte/")
 			) {
 				return join(svelte_dir, "svelte-submodules.js");
+			}
+		},
+		load(id) {
+			if (id === resolved_v_id) {
+				return `export default {};`;
 			}
 		},
 		transformIndexHtml(html) {

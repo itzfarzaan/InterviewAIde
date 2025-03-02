@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from "svelte";
-	import { MarkdownCode } from "@gradio/markdown";
+	import { MarkdownCode } from "@gradio/markdown-code";
 
 	export let edit: boolean;
 	export let value: string | number = "";
@@ -20,24 +20,38 @@
 		display: boolean;
 	}[];
 	export let clear_on_focus = false;
-	export let select_on_focus = false;
 	export let line_breaks = true;
 	export let editable = true;
+	export let root: string;
+	export let max_chars: number | null = null;
 
 	const dispatch = createEventDispatcher();
+	let is_expanded = false;
 
 	export let el: HTMLInputElement | null;
 	$: _value = value;
+
+	function truncate_text(
+		text: string | number,
+		max_length: number | null = null
+	): string {
+		const str = String(text);
+		if (!max_length || str.length <= max_length) return str;
+		return str.slice(0, max_length) + "...";
+	}
+
+	$: display_text = is_expanded
+		? value
+		: truncate_text(display_value || value, max_chars);
 
 	function use_focus(node: HTMLInputElement): any {
 		if (clear_on_focus) {
 			_value = "";
 		}
-		if (select_on_focus) {
-			node.select();
-		}
 
-		node.focus();
+		requestAnimationFrame(() => {
+			node.focus();
+		});
 
 		return {};
 	}
@@ -50,6 +64,24 @@
 		value = currentTarget.value;
 		dispatch("blur");
 	}
+
+	function handle_keydown(event: KeyboardEvent): void {
+		if (event.key === "Enter") {
+			if (edit) {
+				value = _value;
+				dispatch("blur");
+			} else if (!header) {
+				is_expanded = !is_expanded;
+			}
+		}
+		dispatch("keydown", event);
+	}
+
+	function handle_click(): void {
+		if (!edit && !header) {
+			is_expanded = !is_expanded;
+		}
+	}
 </script>
 
 {#if edit}
@@ -60,30 +92,39 @@
 		class:header
 		tabindex="-1"
 		on:blur={handle_blur}
+		on:mousedown|stopPropagation
+		on:mouseup|stopPropagation
+		on:click|stopPropagation
 		use:use_focus
-		on:keydown
+		on:keydown={handle_keydown}
 	/>
 {/if}
 
 <span
-	on:dblclick
-	tabindex="-1"
+	on:click={handle_click}
+	on:keydown={handle_keydown}
+	tabindex="0"
 	role="button"
 	class:edit
+	class:expanded={is_expanded}
+	class:multiline={header}
 	on:focus|preventDefault
 	style={styling}
+	data-editable={editable}
+	placeholder=" "
 >
 	{#if datatype === "html"}
-		{@html value}
+		{@html display_text}
 	{:else if datatype === "markdown"}
 		<MarkdownCode
-			message={value.toLocaleString()}
+			message={display_text.toLocaleString()}
 			{latex_delimiters}
 			{line_breaks}
 			chatbot={false}
+			{root}
 		/>
 	{:else}
-		{editable ? value : display_value || value}
+		{editable ? display_text : display_value || display_text}
 	{/if}
 </span>
 
@@ -99,21 +140,41 @@
 		outline: none;
 		border: none;
 		background: transparent;
+		cursor: text;
 	}
 
 	span {
 		flex: 1 1 0%;
+		position: relative;
+		display: inline-block;
 		outline: none;
-		padding: var(--size-2);
 		-webkit-user-select: text;
 		-moz-user-select: text;
 		-ms-user-select: text;
 		user-select: text;
+		cursor: text;
+		width: 100%;
+		height: 100%;
+	}
+
+	span.expanded {
+		height: auto;
+		min-height: 100%;
+		white-space: pre-wrap;
+		word-break: break-word;
+		white-space: normal;
+	}
+
+	.multiline {
+		white-space: pre-line;
 	}
 
 	.header {
 		transform: translateX(0);
-		font: var(--weight-bold);
+		font-weight: var(--weight-bold);
+		white-space: normal;
+		word-break: break-word;
+		margin-left: var(--size-1);
 	}
 
 	.edit {
