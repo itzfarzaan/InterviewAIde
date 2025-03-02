@@ -3,4 +3,3 @@
 .env/
 .vscode/
 .gradio/
-app.py
